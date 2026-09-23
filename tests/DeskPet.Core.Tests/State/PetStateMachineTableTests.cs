@@ -47,6 +47,7 @@ public sealed class PetStateMachineTableTests
         [("Alert", ActionCancelled)] = PetState.Idle,
         [("Alert", AnimationDone)] = PetState.Idle,
         [("Walking", ArrivedAtTarget)] = PetState.Grabbing,
+        [("Walking", StrollFinished)] = PetState.Idle,
         [("Walking", ActionCancelled)] = PetState.Idle,
         [("Grabbing", Grabbed)] = PetState.Dragging,
         [("Grabbing", DragAbortedByUser)] = PetState.Sad,

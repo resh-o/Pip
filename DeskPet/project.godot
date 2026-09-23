@@ -9,20 +9,29 @@ run/main_scene="res://Main.tscn"
 config/features=PackedStringArray("4.7", "C#", "GL Compatibility")
 run/low_processor_mode=true
 
+[audio]
+
+driver/driver="Dummy"
+
 [display]
 
-window/size/viewport_width=256
-window/size/viewport_height=256
+window/size/viewport_width=160
+window/size/viewport_height=160
 window/size/borderless=true
 window/size/always_on_top=true
 window/size/transparent=true
 window/size/no_focus=true
+window/stretch/mode="canvas_items"
 window/per_pixel_transparency/allowed=true
 window/subwindows/embed_subwindows=false
 
 [dotnet]
 
 project/assembly_name="DeskPet"
+
+[physics]
+
+common/physics_ticks_per_second=10
 
 [rendering]
 

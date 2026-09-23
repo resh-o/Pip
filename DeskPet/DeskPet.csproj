@@ -3,5 +3,9 @@
     <TargetFramework>net8.0</TargetFramework>
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <RootNamespace>DeskPet</RootNamespace>
   </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\src\DeskPet.Core\DeskPet.Core.csproj" />
+  </ItemGroup>
 </Project>

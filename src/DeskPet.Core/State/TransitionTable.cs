@@ -16,6 +16,7 @@ internal static class TransitionTable
             PetEvent.DistractionSeen when atRest => PetState.Alert,
             PetEvent.ActionStarted when atRest || from == PetState.Alert => PetState.Walking,
             PetEvent.ArrivedAtTarget when from == PetState.Walking => PetState.Grabbing,
+            PetEvent.StrollFinished when from == PetState.Walking => resting,
             PetEvent.Grabbed when from == PetState.Grabbing => PetState.Dragging,
             PetEvent.DragFinished when from == PetState.Dragging => PetState.Celebrating,
             PetEvent.DragAbortedByUser when IsHolding(from) => PetState.Sad,

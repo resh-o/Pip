@@ -13,10 +13,13 @@ public enum PetEvent
 
     DistractionSeen,
 
-    /// <summary>The pet sets off towards a target window.</summary>
+    /// <summary>The pet sets off walking: towards a target window, or on an idle stroll.</summary>
     ActionStarted,
 
     ArrivedAtTarget,
+
+    /// <summary>An idle stroll reached its spot; there is nothing to grab.</summary>
+    StrollFinished,
 
     /// <summary>The pet has a grip on the window and starts dragging it.</summary>
     Grabbed,
