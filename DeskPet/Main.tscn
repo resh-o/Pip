@@ -4,7 +4,6 @@
 [ext_resource type="PackedScene" path="res://Pet/Pet.tscn" id="2"]
 [ext_resource type="Script" path="res://Pet/PetMover.cs" id="3"]
 [ext_resource type="Script" path="res://Pet/PetController.cs" id="4"]
-[ext_resource type="Script" path="res://Demo.cs" id="99"]
 
 [node name="App" type="Node"]
 script = ExtResource("1")
@@ -17,6 +16,3 @@ script = ExtResource("3")
 
 [node name="Controller" type="Node" parent="."]
 script = ExtResource("4")
-
-[node name="Demo" type="Node" parent="."]
-script = ExtResource("99")
