@@ -109,7 +109,7 @@ public partial class PetController : Node
         if (!_machine.Fire(PetEvent.ActionStarted))
             return;
         _view.SetFacing(x - _mover.Feet.X);
-        _mover.WalkTo(x, () => _machine.Fire(PetEvent.StrollFinished));
+        _mover.TravelTo(new Vector2(x, _mover.Feet.Y), () => _machine.Fire(PetEvent.StrollFinished));
     }
 
     private float PickStrollX()

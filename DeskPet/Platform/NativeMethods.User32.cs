@@ -11,6 +11,12 @@ internal static partial class NativeMethods
 
     public const int SwHide = 0;
     public const int SwShowNa = 8;
+    public const uint SwShowMaximized = 3;
+    public const uint SwShowNoActivate = 4;
+    public const uint SwShowMinNoActive = 7;
+
+    public static readonly nint HwndTopmost = -1;
+    public static readonly nint HwndNoTopmost = -2;
 
     public const uint SwpNoSize = 0x0001;
     public const uint SwpNoMove = 0x0002;
@@ -23,34 +29,6 @@ internal static partial class NativeMethods
 
     // DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 is the pseudo-handle -4.
     public static readonly nint DpiAwarenessContextPerMonitorV2 = -4;
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct Rect
-    {
-        public int Left, Top, Right, Bottom;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct Point
-    {
-        public int X, Y;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct MonitorInfo
-    {
-        public uint Size;
-        public Rect Monitor;
-        public Rect Work;
-        public uint Flags;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct LastInputInfo
-    {
-        public uint Size;
-        public uint Time;
-    }
 
     [LibraryImport("user32.dll", EntryPoint = "GetWindowLongPtrW")]
     public static partial nint GetWindowLongPtr(nint hwnd, int index);

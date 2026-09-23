@@ -4,7 +4,7 @@ using Godot;
 namespace DeskPet.Pet;
 
 /// <summary>
-/// Owns where the pet stands on the desktop (physical pixels) and walks its window there with
+/// Owns where the pet stands on the desktop (physical pixels) and moves its window there with
 /// tweens. The pet's feet sit at <see cref="FeetOffset"/> inside the art canvas.
 /// </summary>
 public partial class PetMover : Node
@@ -29,30 +29,34 @@ public partial class PetMover : Node
 
     internal void Init(OwnWindow window) => _window = window;
 
+    /// <summary>Puts the feet at a physical screen point immediately (also used to ride a dragged window).</summary>
     public void PlaceAt(Vector2 feet)
     {
+        // DWM rescales the window on monitors of another DPI, so re-read its real size each move.
         _scale = _window.PhysicalWidth / CanvasSize.X;
-        SetFeet(feet);
-    }
-
-    /// <summary>Walks horizontally to <paramref name="x"/>; eases in and out like a small creature would.</summary>
-    public void WalkTo(float x, Action arrived)
-    {
-        _walk?.Kill();
-        float seconds = Mathf.Max(0.4f, Mathf.Abs(x - _feet.X) / (WalkSpeed * _scale));
-        _walk = CreateTween().SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
-        _walk.TweenMethod(Callable.From<float>(SetFeetX), _feet.X, x, seconds);
-        _walk.TweenCallback(Callable.From(arrived));
-    }
-
-    public void Stop() => _walk?.Kill();
-
-    private void SetFeetX(float x) => SetFeet(new Vector2(x, _feet.Y));
-
-    private void SetFeet(Vector2 feet)
-    {
         _feet = feet;
         Vector2 topLeft = feet - FeetOffset * _scale;
         _window.MoveTo(Mathf.RoundToInt(topLeft.X), Mathf.RoundToInt(topLeft.Y));
     }
+
+    /// <summary>Walks (or hops through the air) to <paramref name="feet"/>, easing in and out.</summary>
+    public void TravelTo(Vector2 feet, Action arrived, float speedFactor = 1f)
+    {
+        _walk?.Kill();
+        Vector2 from = _feet;
+        float seconds = Mathf.Max(0.35f, from.DistanceTo(feet) / (WalkSpeed * speedFactor * _scale));
+        _walk = CreateTween().SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+        _walk.TweenMethod(Callable.From<float>(t => PlaceAt(from.Lerp(feet, t))), 0f, 1f, seconds);
+        _walk.TweenCallback(Callable.From(arrived));
+    }
+
+    /// <summary>The floor directly below the pet: the bottom of the work area it is over.</summary>
+    public Vector2 FloorBelow()
+    {
+        var work = Desktop.WorkAreaAt(Mathf.RoundToInt(_feet.X), Mathf.RoundToInt(_feet.Y));
+        float margin = CanvasSize.X * 0.5f * _scale;
+        return new Vector2(Mathf.Clamp(_feet.X, work.Left + margin, work.Right - margin), work.Bottom);
+    }
+
+    public void Stop() => _walk?.Kill();
 }

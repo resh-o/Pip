@@ -7,6 +7,8 @@ internal sealed class OwnWindow
 {
     private readonly nint _hwnd;
 
+    public nint Handle => _hwnd;
+
     public OwnWindow() =>
         _hwnd = (nint)DisplayServer.WindowGetNativeHandle(DisplayServer.HandleType.WindowHandle);
 
