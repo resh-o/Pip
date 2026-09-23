@@ -15,6 +15,7 @@ public partial class Spike : Node2D
     [DllImport("user32.dll")] static extern nint WindowFromPoint(Pt p);
     [DllImport("user32.dll")] static extern int GetSystemMetrics(int i);
     [DllImport("user32.dll")] static extern nint GetAncestor(nint h, uint f);
+    [DllImport("user32.dll")] static extern nint SetThreadDpiAwarenessContext(nint c);
 
     struct Rect { public int L, T, R, B; }
     struct Pt { public int X, Y; }
@@ -44,8 +45,7 @@ public partial class Spike : Node2D
     public override void _Process(double delta)
     {
         _t += delta;
-        var x = 200 + (int)(Mathf.Sin((float)_t * 0.8f) * 150);
-        SetWindowPos(_hwnd, 0, x, 300, 0, 0, 0x0001 | 0x0004 | 0x0010);
+        if (_t < 1) { var old = SetThreadDpiAwarenessContext(-4); SetWindowPos(_hwnd, 0, 800, -700, 0, 0, 0x0001 | 0x0004 | 0x0010); GetWindowRect(_hwnd, out var p); SetThreadDpiAwarenessContext(old); if (!_probed) GD.Print($"pmv2 rect={p.L},{p.T},{p.R},{p.B}"); }
         QueueRedraw();
         if (!_probed && _t > 2) Probe();
     }
