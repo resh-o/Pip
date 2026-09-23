@@ -2,6 +2,7 @@ using DeskPet.Core.Abstractions;
 using DeskPet.Core.Models;
 using DeskPet.Core.Planning;
 using DeskPet.Core.State;
+using DeskPet.Platform;
 using Godot;
 
 namespace DeskPet.Pet;
@@ -23,6 +24,7 @@ internal sealed partial class WindowDragger : Node
 {
     private const double GripSeconds = 0.45;
     private const double StrainSeconds = 0.7;
+    private const float TravelSeconds = 2.5f;
     private const float DragSpeed = 520f; // art units per second, so drags feel the same at any DPI
 
     private enum Phase { Idle, Walking, Gripping, Dragging }
@@ -36,6 +38,7 @@ internal sealed partial class WindowDragger : Node
     private WindowPlacement? _original;
     private Action<DragOutcome, WindowPlacement?>? _done;
     private Tween? _tween;
+    private ScreenEdge? _edge;
     private (int X, int Y) _grip;
     private ScreenRect _start;
     private ScreenRect _destination;
@@ -64,8 +67,9 @@ internal sealed partial class WindowDragger : Node
             return;
         }
         (_action, _done, _phase) = (action, done, Phase.Walking);
-        _grip = DragTargets.GripOffset(bounds, (action as PetAction.Haul)?.Edge);
-        _mover.TravelTo(GripPoint(bounds), OnArrived, speedFactor: 1.6f);
+        _edge = action is PetAction.Haul haul ? OpenEdge(haul, bounds) : null;
+        _grip = DragTargets.GripOffset(bounds, _edge);
+        _mover.TravelTo(GripPoint(bounds), OnArrived, speedFactor: 1.6f, maxSeconds: TravelSeconds);
     }
 
     /// <summary>Stops immediately (pause, fullscreen); the window stays wherever it is now.</summary>
@@ -144,7 +148,7 @@ internal sealed partial class WindowDragger : Node
         var done = _done!;
         var original = _original;
         (_action, _done, _original) = (null, null, null);
-        _mover.TravelTo(_mover.FloorBelow(), static () => { });
+        _mover.TravelTo(_mover.FloorBelow(), static () => { }, speedFactor: 1.6f, maxSeconds: TravelSeconds);
         done(outcome, original);
     }
 
@@ -153,9 +157,18 @@ internal sealed partial class WindowDragger : Node
     private ScreenRect Destination(PetAction action, ScreenRect bounds) => action switch
     {
         _ when Target(action).IsMaximized => bounds,
-        PetAction.Haul haul => DragTargets.HaulDestination(bounds, haul.Target.MonitorBounds, haul.Edge),
+        PetAction.Haul haul when _edge is { } edge => DragTargets.HaulDestination(bounds, haul.Target.MonitorBounds, edge),
+        PetAction.Haul => bounds, // boxed in by monitors on every side: tug in place, then minimise
         _ => DragTargets.CentreIn(bounds, _windows.WorkAreaOf(Target(action).Handle)),
     };
+
+    // The planner picks the nearest edge; never drag across onto another monitor, where Windows
+    // rescales and repositions the window mid-drag (and the move would look like the user's).
+    private static ScreenEdge? OpenEdge(PetAction.Haul haul, ScreenRect bounds)
+    {
+        var monitor = haul.Target.MonitorBounds;
+        return EdgePicker.NearestOpen(bounds, monitor, edge => !Desktop.HasMonitorBeyond(monitor, bounds, edge));
+    }
 
     private static WindowInfo Target(PetAction action) => action switch
     {

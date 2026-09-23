@@ -45,4 +45,18 @@ public sealed class EdgePickerTests
 
         Assert.Equal(ScreenEdge.Right, EdgePicker.Nearest(overhangingRight, Primary));
     }
+
+    [Fact]
+    public void Skips_edges_that_lead_onto_another_monitor()
+    {
+        var nearTop = new ScreenRect(700, 0, 1200, 200); // centre (950, 100): top 100, left 950, right 970, bottom 980
+
+        Assert.Equal(ScreenEdge.Left, EdgePicker.NearestOpen(nearTop, Primary, e => e != ScreenEdge.Top));
+    }
+
+    [Fact]
+    public void No_open_edge_means_no_edge()
+    {
+        Assert.Null(EdgePicker.NearestOpen(new ScreenRect(100, 100, 300, 300), Primary, _ => false));
+    }
 }

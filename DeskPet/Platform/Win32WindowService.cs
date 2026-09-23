@@ -22,7 +22,8 @@ internal sealed class Win32WindowService : IWindowService
     {
         using var scope = new PhysicalPixelsScope();
         nint hwnd = NativeMethods.GetForegroundWindow();
-        if (hwnd == 0 || _reader.IsOwn(hwnd) || _reader.IsShell(hwnd) || !NativeMethods.IsWindowVisible(hwnd))
+        // A window minimised without activation stays "foreground", but nothing is really in front.
+        if (hwnd == 0 || _reader.IsOwn(hwnd) || _reader.IsShell(hwnd) || !NativeMethods.IsWindowVisible(hwnd) || NativeMethods.IsIconic(hwnd))
             return null;
         return _lastForeground = _reader.Read(hwnd, _lastForeground);
     }

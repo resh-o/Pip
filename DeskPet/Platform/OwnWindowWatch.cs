@@ -18,6 +18,8 @@ internal sealed partial class OwnWindowWatch : Node
     internal void Init(OwnWindow window)
     {
         _window = window;
+        _checkIn = CheckSeconds;
+        _lastFrames = Engine.GetFramesDrawn();
         LogStartup();
     }
 
@@ -47,6 +49,8 @@ internal sealed partial class OwnWindowWatch : Node
             $"systemScale={_window.SystemScale} passthroughPoints={root.MousePassthroughPolygon.Length}");
         _last = Snapshot.Take(_window.Handle);
         DiagnosticLog.Write("start: " + _last);
+        double startupMs = (DateTime.Now - System.Diagnostics.Process.GetCurrentProcess().StartTime).TotalMilliseconds;
+        DiagnosticLog.Write($"start: ready {startupMs:F0} ms after process start");
     }
 
     private readonly record struct Snapshot(

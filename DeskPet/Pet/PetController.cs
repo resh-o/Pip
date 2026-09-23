@@ -23,6 +23,15 @@ public partial class PetController : Node
     private double _strollIn;
     private double _reactionLeft;
 
+    internal PetStateMachine Machine => _machine;
+
+    /// <summary>Resting or alert, awake and not mid-walk: free to set off on a job.</summary>
+    internal bool IsReadyForAction =>
+        (_machine.State == _machine.Resting || _machine.State == PetState.Alert) && !_machine.IsSuspended;
+
+    /// <summary>Physical screen point the eyes should hold on (a target window); null follows the cursor.</summary>
+    internal Vector2? LookTarget { get; set; }
+
     internal void Init(PetView view, PetMover mover, PassthroughUpdater passthrough)
     {
         _view = view;
@@ -46,9 +55,13 @@ public partial class PetController : Node
     {
         if (from == PetState.Walking)
             _mover.Stop();
+        if (to == _machine.Resting)
+            LookTarget = null;
         _reactionLeft = ReactionSeconds(to);
         Show(to);
     }
+
+    internal void SetMood(float focus) => _view.SetMood(focus);
 
     private void Show(PetState state)
     {
@@ -79,9 +92,15 @@ public partial class PetController : Node
     {
         if (_machine.State == PetState.Sleeping)
             return;
-        var (x, y) = Desktop.CursorPosition();
+        Vector2 target = LookTarget ?? Cursor();
         Vector2 eyes = _mover.Feet - new Vector2(0, EyeHeight * _mover.Scale);
-        _view.LookToward((new Vector2(x, y) - eyes) / _mover.Scale);
+        _view.LookToward((target - eyes) / _mover.Scale);
+    }
+
+    private static Vector2 Cursor()
+    {
+        var (x, y) = Desktop.CursorPosition();
+        return new Vector2(x, y);
     }
 
     private void CheckUserIdle(double delta)
@@ -99,7 +118,7 @@ public partial class PetController : Node
 
     private void MaybeStroll(double delta)
     {
-        if (_machine.State != _machine.Resting || _machine.IsSuspended)
+        if (_machine.State != _machine.Resting || _machine.IsSuspended || _mover.IsWalking)
             return;
         _strollIn -= delta;
         if (_strollIn > 0)

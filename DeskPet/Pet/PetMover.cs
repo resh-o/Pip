@@ -39,12 +39,12 @@ public partial class PetMover : Node
         _window.MoveTo(Mathf.RoundToInt(topLeft.X), Mathf.RoundToInt(topLeft.Y));
     }
 
-    /// <summary>Walks (or hops through the air) to <paramref name="feet"/>, easing in and out.</summary>
-    public void TravelTo(Vector2 feet, Action arrived, float speedFactor = 1f)
+    /// <summary>Walks (or hops through the air) to <paramref name="feet"/>, easing in and out; a job caps the time so it hurries.</summary>
+    public void TravelTo(Vector2 feet, Action arrived, float speedFactor = 1f, float maxSeconds = float.MaxValue)
     {
         _walk?.Kill();
         Vector2 from = _feet;
-        float seconds = Mathf.Max(0.35f, from.DistanceTo(feet) / (WalkSpeed * speedFactor * _scale));
+        float seconds = Mathf.Clamp(from.DistanceTo(feet) / (WalkSpeed * speedFactor * _scale), 0.35f, Mathf.Max(0.35f, maxSeconds));
         _walk = CreateTween().SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
         _walk.TweenMethod(Callable.From<float>(t => PlaceAt(from.Lerp(feet, t))), 0f, 1f, seconds);
         _walk.TweenCallback(Callable.From(arrived));
